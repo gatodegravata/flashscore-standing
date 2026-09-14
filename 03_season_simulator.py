@@ -129,6 +129,7 @@ def run_monte_carlo_season(
     g4_count = {t: 0 for t in teams}
     g6_count = {t: 0 for t in teams}
     z4_count = {t: 0 for t in teams}
+    relegation_cutoff_pts = []  # Armazena os pontos do 17º colocado em cada iteração
 
     fixtures_list = df_fixtures[["Home", "Away", "Round_Num"]].to_dict(orient="records")
 
@@ -232,6 +233,11 @@ def run_monte_carlo_season(
             if pos_idx >= (n_teams - 3):  # 4 últimos (Z-4)
                 z4_count[t] += 1
 
+        # Registra a pontuação do 17º colocado (primeiro time rebaixado) desta simulação
+        first_relegated_team = sorted_teams[16]  # índice 16 = posição 17
+        pts_17 = sim_table[first_relegated_team]["PTS"]
+        relegation_cutoff_pts.append(pts_17)
+
     # Monta DataFrame final com probabilidades
     summary_records = []
     for _, row in df_current_standings.iterrows():
@@ -252,4 +258,25 @@ def run_monte_carlo_season(
     # Ordena por pontos médios esperados / probabilidade de título
     df_resultado = df_resultado.sort_values(by=["Campeao_%", "Pts_Medio"], ascending=[False, False]).reset_index(drop=True)
     df_resultado.insert(0, "Pos_Esperada", range(1, len(df_resultado) + 1))
-    return df_resultado
+
+    # Tabela com a distribuição de pontos do 17º colocado (Nota de Corte do Z-4)
+    cutoff_series = pd.Series(relegation_cutoff_pts)
+    cutoff_counts = cutoff_series.value_counts().sort_index()
+    cutoff_pct = (cutoff_counts / n_simulations) * 100
+
+    # Probabilidade acumulada: se você fizer X pontos, qual a chance de NÃO cair?
+    # Um time se salva se sua pontuação for MAIOR que a do 17º colocado
+    safety_pct = []
+    for p in cutoff_counts.index:
+        # % das vezes que o 17º fez MENOS que esse valor (time estaria a salvo)
+        safe = (cutoff_series < p).mean() * 100
+        safety_pct.append(round(safe, 1))
+
+    df_corte_z4 = pd.DataFrame({
+        "Pontos_17_Lugar": cutoff_counts.index,
+        "Frequencia_Cenarios": cutoff_counts.values,
+        "Probabilidade_%": cutoff_pct.round(1).values,
+        "Chance_Salvacao_Com_Pontuacao_%": safety_pct,
+    })
+
+    return df_resultado, df_corte_z4

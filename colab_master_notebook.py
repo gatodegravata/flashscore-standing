@@ -57,7 +57,7 @@ latest_elos = get_latest_team_elos(df_backup, sub_league=sub_league)
 params = calibrate_league_parameters(df_backup, sub_league=sub_league)
 
 # Roda a simulação com os critérios do Brasileirão e fatores de reta final
-df_projecao = run_season_simulation(
+df_projecao, df_corte_z4 = run_season_simulation(
     df_current_standings=tabela_atual,
     df_fixtures=df_futuro,
     latest_elos=latest_elos,
@@ -65,5 +65,10 @@ df_projecao = run_season_simulation(
     n_simulations=n_simulacoes
 )
 
-# Exibe as probabilidades finais de Título, G-4, G-6 e Rebaixamento
+# 1. Exibe as probabilidades por clube (Título, G-4, G-6 e Rebaixamento)
+print("=== PROJEÇÃO FINAL DA TABELA ===")
 display(df_projecao)
+
+# 2. Exibe a distribuição exata da nota de corte do Z-4 (pontuação do 17º colocado)
+print("\n=== NOTA DE CORTE DO REBAIXAMENTO (PONTUAÇÃO DO 17º COLOCADO) ===")
+display(df_corte_z4)
