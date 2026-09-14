@@ -1,0 +1,43 @@
+{
+  "default": {
+    "points": {
+      "win": 3,
+      "draw": 1,
+      "loss": 0
+    },
+    "tiebreakers": [
+      "points",
+      "wins",
+      "goal_difference",
+      "goals_for",
+      "head_to_head"
+    ]
+  },
+  "brazil_serie_a": {
+    "points": {
+      "win": 3,
+      "draw": 1,
+      "loss": 0
+    },
+    "tiebreakers": [
+      "points",
+      "wins",
+      "goal_difference",
+      "goals_for",
+      "head_to_head"
+    ]
+  },
+  "premier_league": {
+    "points": {
+      "win": 3,
+      "draw": 1,
+      "loss": 0
+    },
+    "tiebreakers": [
+      "points",
+      "goal_difference",
+      "goals_for",
+      "head_to_head"
+    ]
+  }
+}
