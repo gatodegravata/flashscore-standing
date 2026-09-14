@@ -63,9 +63,23 @@ def get_fixtures_dataframe(fixtures_url: str) -> pd.DataFrame:
         })
 
     df_futuro = pd.DataFrame(records)
-    # Remove duplicados se houver e ordena por data/rodada
+    # Remove duplicidades e ordena por Rodada e Data
     df_futuro = df_futuro.drop_duplicates(subset=["Match_ID"]).sort_values(by=["Round_Num", "Date"]).reset_index(drop=True)
-    return df_futuro
+
+    # Jogos adiados da Rodada 21 sem data confirmada que o Flashscore omite do feed de fixtures
+    postponed_matches_r21 = [
+        {"Match_ID": "POSTP_SPFC_SAN", "Round": "Round 21", "Round_Num": 21, "Date": None, "Home": "Sao Paulo", "Away": "Santos", "Home_Logo": None, "Away_Logo": None},
+        {"Match_ID": "POSTP_CAM_RBB", "Round": "Round 21", "Round_Num": 21, "Date": None, "Home": "Atletico-MG", "Away": "Bragantino", "Home_Logo": None, "Away_Logo": None},
+        {"Match_ID": "POSTP_CHA_VAS", "Round": "Round 21", "Round_Num": 21, "Date": None, "Home": "Chapecoense-SC", "Away": "Vasco", "Home_Logo": None, "Away_Logo": None},
+    ]
+
+    for pm in postponed_matches_r21:
+        # Verifica se o confronto já está presente
+        exists = ((df_futuro["Home"] == pm["Home"]) & (df_futuro["Away"] == pm["Away"])).any()
+        if not exists:
+            df_futuro = pd.concat([pd.DataFrame([pm]), df_futuro], ignore_index=True)
+
+    return df_futuro.sort_values(by=["Round_Num", "Date"]).reset_index(drop=True)
 
 if __name__ == "__main__":
     url = "https://www.flashscore.com/football/brazil/serie-a-betano/fixtures/"
